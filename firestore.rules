@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+    function validCountChange(runId) {
+      let member = /databases/$(database)/documents/users/$(request.auth.uid)/joinedRuns/$(runId);
+      return resource.data.organizerId != request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants'])
+        && request.resource.data.participants is int
+        && request.resource.data.participants >= 1
+        && ((!exists(member) && existsAfter(member)
+             && request.resource.data.participants == resource.data.participants + 1)
+          || (exists(member) && !existsAfter(member)
+             && request.resource.data.participants == resource.data.participants - 1));
+    }
+    match /runs/{runId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasAll(['title', 'pace', 'distance', 'date', 'location', 'participants', 'afterRun', 'organizer', 'description', 'organizerId', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['title', 'pace', 'distance', 'date', 'location', 'participants', 'afterRun', 'organizer', 'description', 'organizerId', 'createdAt'])
+        && request.resource.data.organizerId == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.participants == 1
+        && request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 200
+        && request.resource.data.pace is string && request.resource.data.pace.size() > 0 && request.resource.data.pace.size() <= 100
+        && request.resource.data.distance is string && request.resource.data.distance.size() > 0 && request.resource.data.distance.size() <= 100
+        && request.resource.data.date is string && request.resource.data.date.size() > 0 && request.resource.data.date.size() <= 200
+        && request.resource.data.location is string && request.resource.data.location.size() > 0 && request.resource.data.location.size() <= 300
+        && request.resource.data.afterRun is string && request.resource.data.afterRun.size() <= 500
+        && request.resource.data.organizer is string && request.resource.data.organizer.size() <= 200
+        && request.resource.data.description is string && request.resource.data.description.size() <= 5000;
+      allow update: if signedIn() && validCountChange(runId);
+      allow delete: if false;
+    }
+    match /users/{userId}/joinedRuns/{runId} {
+      function ownMembership() { return signedIn() && request.auth.uid == userId; }
+      function runPath() { return /databases/$(database)/documents/runs/$(runId); }
+      allow read: if ownMembership();
+      allow create: if ownMembership()
+        && exists(runPath())
+        && get(runPath()).data.organizerId != userId
+        && request.resource.data.keys().hasAll(['runId', 'joinedAt'])
+        && request.resource.data.keys().hasOnly(['runId', 'joinedAt'])
+        && request.resource.data.runId == runId
+        && request.resource.data.joinedAt == request.time
+        && getAfter(runPath()).data.participants == get(runPath()).data.participants + 1;
+      allow delete: if ownMembership()
+        && exists(runPath())
+        && get(runPath()).data.organizerId != userId
+        && getAfter(runPath()).data.participants == get(runPath()).data.participants - 1;
+      allow update: if false;
+    }
+  }
+}

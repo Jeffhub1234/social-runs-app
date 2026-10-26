@@ -61,9 +61,6 @@ components/             Genbrugelige komponenter (liste, kort, filterark, kortv�
 tests/                  Tests af Firestore-reglerne (se tests/README.md)
 ```
 
-## Firebase
-
-Følg [Firebase-guiden](FIREBASE_SETUP.md) for at oprette databasen og forbinde appen, før du opretter løbeture. Efter opdateringen med kort og filtre skal de nye `firestore.rules` publiceres i Firebase-konsollen.
 
 ## Start projektet
 
@@ -76,7 +73,3 @@ npx expo start --clear
 
 Hvis Expo allerede kører under en opgradering, stop serveren med `Ctrl+C` og start den igen med kommandoen ovenfor. Scan derefter QR-koden i Expo Go.
 
-
-## Tests
-
-Firestore-reglerne testes mod Firebase-emulatoren. Se [tests/README.md](tests/README.md).

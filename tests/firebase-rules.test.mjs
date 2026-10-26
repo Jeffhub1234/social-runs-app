@@ -22,7 +22,8 @@ const memberRef = (database, uid, id = runId) => doc(database, 'users', uid, 'jo
 const validRun = () => ({
   title: 'Fælles løbetur', pace: '5:30–6:00', distance: '5 km', date: '15. oktober kl. 17:30',
   location: 'Parken', participants: 1, afterRun: 'Kaffe', organizer: 'Alice', description: 'Rolig løbetur',
-  organizerId: 'A', createdAt: serverTimestamp(),
+  organizerId: 'A', createdAt: serverTimestamp(), startsAt: Timestamp.fromMillis(Date.now() + 3600000),
+  start: { latitude: 55.7003, longitude: 12.5714 }, end: { latitude: 55.6905, longitude: 12.5801 },
 });
 async function baseline() {
   await env.clearFirestore();
@@ -58,7 +59,10 @@ await test('Valid authenticated creation succeeds; unsigned and anonymous access
 await test('Forged organizer and malformed run creation are denied', async () => {
   await baseline();
   await assertFails(setDoc(doc(B, 'runs', 'forged-organizer'), validRun()));
-  for (const invalid of [{ participants: 2 }, { title: '' }, { createdAt: Timestamp.fromMillis(0) }, { unexpected: true }]) {
+  for (const invalid of [
+    { participants: 2 }, { title: '' }, { createdAt: Timestamp.fromMillis(0) }, { unexpected: true },
+    { startsAt: Timestamp.fromMillis(0) }, { start: { latitude: 200, longitude: 0 } }, { end: { latitude: 55, longitude: 12, extra: 1 } },
+  ]) {
     await assertFails(setDoc(doc(A, 'runs', 'malformed'), { ...validRun(), ...invalid }));
   }
 });

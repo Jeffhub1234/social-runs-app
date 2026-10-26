@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Pressable, ScrollView, ActivityIndicator } from "react-native";
 
 import styles from "../styles";
+import RoutePreview from "../components/RoutePreview";
 
 // "Detaljer": viser én løbetur og lader brugeren melde sig til eller fra.
 // Turen findes i listen fra Firestore ud fra det id, der blev sendt med i navigationen.
@@ -86,6 +87,8 @@ export default function RunDetailsScreen({
         <Text style={styles.detailText}>👥 {run.participants ?? 1} deltagere</Text>
         <Text style={styles.detailText}>🙋 Arrangør: {run.organizer}</Text>
         {!!run.afterRun && <Text style={styles.detailText}>☕ {run.afterRun}</Text>}
+        {/* Kortet vises kun for ture med start og slut. Ældre ture har ingen koordinater. */}
+        <RoutePreview start={run.start} end={run.end} />
         <Text style={styles.description}>{run.description}</Text>
 
         {isOrganizer ? (

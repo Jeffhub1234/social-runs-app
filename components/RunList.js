@@ -2,10 +2,12 @@ import React from "react";
 import { View, Text, FlatList, Pressable, ActivityIndicator } from "react-native";
 
 import styles from "../styles";
+import { distanceKm, formatKm, isValidPoint } from "../data/location";
 
 // Fælles liste over løbeture, som bruges på "Find runs", "Mine runs" og "Tilmeldte".
 // Viser også indlæsning og fejlbesked, så skærmene ikke skal gentage den logik.
-export default function RunList({ navigation, runs = [], loading, error, onRetry, header, emptyMessage }) {
+// Kender vi brugerens position (userLocation), vises afstanden til hver turs startsted.
+export default function RunList({ navigation, runs = [], loading, error, onRetry, header, emptyMessage, userLocation }) {
   return (
     <FlatList
       style={styles.flex}
@@ -43,7 +45,10 @@ export default function RunList({ navigation, runs = [], loading, error, onRetry
           <Text style={styles.importantText}>Tempo: {item.pace}</Text>
           <Text style={styles.cardText}>Distance: {item.distance}</Text>
           <Text style={styles.cardText}>{item.date}</Text>
-          <Text style={styles.cardText}>📍 {item.location}</Text>
+          <Text style={styles.cardText}>
+            📍 {item.location}
+            {userLocation && isValidPoint(item.start) ? ` · ${formatKm(distanceKm(userLocation, item.start))} fra dig` : ""}
+          </Text>
           <Text style={styles.cardText}>👥 {item.participants ?? 1} deltagere</Text>
           {!!item.afterRun && <Text style={styles.cardText}>☕ {item.afterRun}</Text>}
         </Pressable>

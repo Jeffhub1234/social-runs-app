@@ -2,6 +2,15 @@
 
 Appen gemmer nye løbeture i Cloud Firestore og viser ændringer løbende. Der er ingen indbyggede eksempeldata, så du starter med en tom oversigt.
 
+## Opdatering: kort og filtre (vigtigt)
+
+Nye løbeture gemmer nu også starttidspunkt (`startsAt`) samt start- og slutpunkt på kortet (`start`, `end`). De gamle regler afviser de nye felter, så **du kan ikke oprette ture, før reglerne er opdateret**:
+
+1. Åbn **Firestore Database → Rules** i Firebase-konsollen.
+2. Erstat alt med hele indholdet af `firestore.rules` fra dette projekt, og tryk **Publish**.
+
+Ture, der er oprettet før opdateringen, vises stadig i listen, men ikke på kortet og ikke, når der er valgt dag eller tidspunkt i filteret.
+
 ## Har du allerede Firebase opsat?
 
 For at bruge den nye version med brugere:

@@ -38,7 +38,8 @@ function RunTabs({ user, runs, joinedRunIds, loading, error, participationLoadin
         tabBarStyle: styles.tabBar,
       }}
     >
-      <Tabs.Screen name="FindRuns" options={{ title: "Find runs", tabBarAccessibilityLabel: "Find løbeture" }}>
+      {/* Swipe er slået fra, så et vandret træk på kortet flytter kortet i stedet for at skifte fane. */}
+      <Tabs.Screen name="FindRuns" options={{ title: "Find runs", tabBarAccessibilityLabel: "Find løbeture", swipeEnabled: false }}>
         {(props) => <HomeScreen {...props} {...shared} runs={runs} />}
       </Tabs.Screen>
       {/* Kun ture, som brugeren selv har oprettet. */}

@@ -4,6 +4,13 @@ service cloud.firestore {
     function signedIn() {
       return request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
+    function validPoint(point) {
+      return point is map
+        && point.keys().hasAll(['latitude', 'longitude'])
+        && point.keys().hasOnly(['latitude', 'longitude'])
+        && point.latitude is number && point.latitude >= -90 && point.latitude <= 90
+        && point.longitude is number && point.longitude >= -180 && point.longitude <= 180;
+    }
     function validCountChange(runId) {
       let member = /databases/$(database)/documents/users/$(request.auth.uid)/joinedRuns/$(runId);
       return resource.data.organizerId != request.auth.uid
@@ -18,8 +25,11 @@ service cloud.firestore {
     match /runs/{runId} {
       allow read: if signedIn();
       allow create: if signedIn()
-        && request.resource.data.keys().hasAll(['title', 'pace', 'distance', 'date', 'location', 'participants', 'afterRun', 'organizer', 'description', 'organizerId', 'createdAt'])
-        && request.resource.data.keys().hasOnly(['title', 'pace', 'distance', 'date', 'location', 'participants', 'afterRun', 'organizer', 'description', 'organizerId', 'createdAt'])
+        && request.resource.data.keys().hasAll(['title', 'pace', 'distance', 'date', 'startsAt', 'location', 'start', 'end', 'participants', 'afterRun', 'organizer', 'description', 'organizerId', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['title', 'pace', 'distance', 'date', 'startsAt', 'location', 'start', 'end', 'participants', 'afterRun', 'organizer', 'description', 'organizerId', 'createdAt'])
+        && request.resource.data.startsAt is timestamp && request.resource.data.startsAt > request.time
+        && validPoint(request.resource.data.start)
+        && validPoint(request.resource.data.end)
         && request.resource.data.organizerId == request.auth.uid
         && request.resource.data.createdAt == request.time
         && request.resource.data.participants == 1

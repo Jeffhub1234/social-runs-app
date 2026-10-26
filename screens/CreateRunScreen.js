@@ -13,7 +13,10 @@ import styles from "../styles";
 import { useHeaderHeight } from "@react-navigation/elements";
 import ChoiceField from "../components/ChoiceField";
 import RunDateTimeField from "../components/RunDateTimeField";
+import LocationPickerField from "../components/LocationPickerField";
 import { paceOptions } from "../data/pace";
+import { NO_AFTER_RUN } from "../data/filters";
+import { isValidPoint } from "../data/location";
 
 // Standardtidspunkt for en ny tur: om en time, afrundet til hele minutter.
 function defaultRunDate() {
@@ -31,18 +34,27 @@ export default function CreateRunScreen({ navigation, addRun }) {
   const [distance, setDistance] = useState("");
   const [date, setDate] = useState(defaultRunDate);
   const [location, setLocation] = useState("");
+  // Start- og slutpunkt fra kortet: { latitude, longitude } eller null.
+  const [route, setRoute] = useState({ start: null, end: null });
   const [afterRun, setAfterRun] = useState("");
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
 
   const createRun = async () => {
     if (saving) return;
-    // Navn, tempo, distance og lokation skal udfyldes. Resten er valgfrit.
-    if (![title, pace, distance, location].every((value) => value.trim())) {
+    // Navn, tempo, distance, mødested og rute skal udfyldes. Resten er valgfrit.
+    if (![title, pace, distance, location].every((value) => value.trim()) || !isValidPoint(route.start) || !isValidPoint(route.end)) {
       Alert.alert(
         "Mangler oplysninger",
-        "Udfyld navn, tempo, distance, tidspunkt og lokation."
+        "Udfyld navn, tempo, distance og mødested, og vælg start og slut på kortet."
       );
+      return;
+    }
+
+    // Distancen skrives som et tal i km. Komma og punktum er begge tilladt.
+    const km = Number(distance.trim().replace(",", "."));
+    if (!(km > 0 && km <= 200)) {
+      Alert.alert("Ugyldig distance", "Skriv distancen i km, fx 5 eller 7,5.");
       return;
     }
 
@@ -55,11 +67,15 @@ export default function CreateRunScreen({ navigation, addRun }) {
     const newRun = {
       title: title.trim(),
       pace: pace.trim(),
-      distance: distance.trim(),
+      distance: `${String(km).replace(".", ",")} km`,
+      // "date" er teksten, der vises. "startsAt" er det rigtige tidspunkt, som filtrene bruger.
       date: `${date.toLocaleDateString("da-DK", { day: "numeric", month: "long", year: "numeric" })} kl. ${date.toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })}`,
+      startsAt: date,
       location: location.trim(),
+      start: route.start,
+      end: route.end,
       participants: 1,
-      afterRun: afterRun.trim() || "Ingen planlagt aktivitet bagefter",
+      afterRun: afterRun.trim() || NO_AFTER_RUN,
       organizer: "Dig",
       description:
         description || "En social løbetur oprettet af en bruger.",
@@ -81,6 +97,7 @@ export default function CreateRunScreen({ navigation, addRun }) {
     setDistance("");
     setDate(defaultRunDate());
     setLocation("");
+    setRoute({ start: null, end: null });
     setAfterRun("");
     setDescription("");
 
@@ -124,26 +141,31 @@ export default function CreateRunScreen({ navigation, addRun }) {
         <Text style={styles.label}>Tempo</Text>
         <ChoiceField label="Tempo" value={pace} options={paceOptions} onChange={setPace} />
 
-        <Text style={styles.label}>Distance</Text>
+        <Text style={styles.label}>Distance (km)</Text>
         <TextInput
           style={styles.input}
-          placeholder="Fx 5 km"
+          placeholder="Fx 5"
           value={distance}
           onChangeText={setDistance}
-          maxLength={100}
-          accessibilityLabel="Distance"
+          keyboardType="decimal-pad"
+          maxLength={6}
+          accessibilityLabel="Distance i kilometer"
         />
 
         <RunDateTimeField value={date} onChange={setDate} />
 
-        <Text style={styles.label}>Lokation</Text>
+        <Text style={styles.label}>Mødested</Text>
         <TextInput
           style={styles.input}
-          placeholder="Fx Nørrebroparken"
+          placeholder="Fx hovedindgangen til Fælledparken"
+          accessibilityLabel="Mødested"
           value={location}
           onChangeText={setLocation}
           maxLength={300}
         />
+
+        <Text style={styles.label}>Rute: start og slut</Text>
+        <LocationPickerField start={route.start} end={route.end} onChange={setRoute} />
 
         <Text style={styles.label}>Social aktivitet efter løbet</Text>
         <TextInput

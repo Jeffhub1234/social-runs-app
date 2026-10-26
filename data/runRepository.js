@@ -7,7 +7,11 @@ import { requireUser, db } from "../firebase";
 // Returnerer en funktion, der stopper lytningen.
 export function subscribeToRuns(onRuns, onError) {
   return onSnapshot(query(collection(db, "runs"), orderBy("createdAt", "desc")),
-    (snapshot) => onRuns(snapshot.docs.map((document) => ({ ...document.data(), id: document.id }))),
+    (snapshot) => onRuns(snapshot.docs.map((document) => {
+      const data = document.data();
+      // Firestore gemmer starttidspunktet som en Timestamp. Skærmene bruger en almindelig Date.
+      return { ...data, id: document.id, startsAt: data.startsAt?.toDate?.() ?? null };
+    })),
     onError);
 }
 

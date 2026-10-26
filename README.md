@@ -7,9 +7,11 @@ Social Runs er en React Native-app (Expo) til sociale løbeture. Man kan finde l
 ## Funktioner
 
 - **Login og brugeroprettelse** med Firebase Authentication (inkl. "glemt adgangskode"). Login huskes, når appen lukkes.
-- **Find runs** med **søgning** (navn, sted, arrangør, beskrivelse) og **tempofilter**: Brugeren vælger sit eget tempo og ser ture i det tempo og ét interval hurtigere eller langsommere. Det valgte tempo gemmes på telefonen med AsyncStorage.
-- **Opret løbetur** med faste tempointervaller, dato- og tidsvælger, lokation og social aktivitet efter løbet.
-- **Deltag / forlad løbetur** på detaljeskærmen. Deltagerantallet opdateres live for alle brugere.
+- **Find runs** viser kommende løbeture (snarest først) som **liste** eller på et **kort**. På kortet er hver tur en nål ved startstedet. Tryk på nålen for at se turen, og tryk igen for at åbne den.
+- **Detaljerede filtre** på Find runs: eget tempo (± ét interval), distance, dag (i dag, i morgen, næste 7 dage, weekend), tidspunkt på dagen, afstand fra dig og "kun ture med social aktivitet bagefter". Filtrene gemmes på telefonen med AsyncStorage.
+- **Lokation:** Med brugerens tilladelse viser appen "x km fra dig" ved hver tur og kan filtrere efter afstand.
+- **Opret løbetur** med faste tempointervaller, distance i km, dato- og tidsvælger, mødested, **start og slut valgt på et kort** og social aktivitet efter løbet.
+- **Deltag / forlad løbetur** på detaljeskærmen, hvor ruten også vises på et lille kort. Deltagerantallet opdateres live for alle brugere.
 - **Mine runs** og **Tilmeldte** viser henholdsvis de ture, man har oprettet, og dem, man er meldt til.
 
 ## Skærme og navigation
@@ -17,19 +19,23 @@ Social Runs er en React Native-app (Expo) til sociale løbeture. Man kan finde l
 | Skærm | Fil | Indhold |
 | --- | --- | --- |
 | Login / Opret bruger | `screens/AuthScreen.js` | Log ind, opret bruger, nulstil adgangskode |
-| Find runs | `screens/HomeScreen.js` | Alle løbeture med søgning og tempofilter |
+| Find runs | `screens/HomeScreen.js` | Kommende løbeture som liste eller kort, med filtre |
 | Mine runs | `screens/MyRunsScreen.js` | Ture, brugeren selv har oprettet |
 | Tilmeldte | `screens/JoinedRunsScreen.js` | Ture, brugeren har meldt sig til |
-| Opret | `screens/CreateRunScreen.js` | Formular til en ny løbetur |
-| Detaljer | `screens/RunDetailsScreen.js` | Én løbetur og knappen "Deltag / Forlad" |
+| Opret | `screens/CreateRunScreen.js` | Formular til en ny løbetur, inkl. start og slut på kort |
+| Detaljer | `screens/RunDetailsScreen.js` | Én løbetur, rutekort og knappen "Deltag / Forlad" |
 
 Navigationen bruger en **stack-navigator** (oversigt → detaljer) med en **top-tab-navigator** med de fire faner Find runs, Mine runs, Tilmeldte og Opret (`App.js`).
 
 ## Data
 
-- **Firebase Firestore** gemmer løbeture (`runs`) og tilmeldinger (`users/{uid}/joinedRuns`). Appen lytter live på ændringer. Reglerne ligger i `firestore.rules`.
+- **Firebase Firestore** gemmer løbeture (`runs`) og tilmeldinger (`users/{uid}/joinedRuns`). Appen lytter live på ændringer. En løbetur gemmer bl.a. starttidspunkt (`startsAt`) og start- og slutpunkt (`start`, `end` med bredde- og længdegrad). Reglerne ligger i `firestore.rules`.
 - **Firebase Authentication** håndterer brugere. På telefonen gemmes login med **AsyncStorage**.
-- **AsyncStorage** husker også brugerens valgte tempo i filteret på Find runs.
+- **AsyncStorage** husker også brugerens filtre på Find runs.
+
+## Kort og lokation
+
+Kortet bruger `react-native-maps` (Apple Maps på iPhone, Google Maps på Android), og brugerens position hentes med `expo-location`. Begge virker direkte i Expo Go. Siger brugeren nej til lokation, virker appen stadig. Kortet starter så i København, og afstandsfilteret er slået fra.
 
 ## Projektstruktur
 
@@ -39,15 +45,17 @@ styles.js               Al styling (samlet i én fil)
 firebase.js             Forbindelse til Firebase (læser .env)
 firebaseAuth*.js        Login-persistens på telefon og web
 data/runRepository.js   Læsning og skrivning til Firestore
-data/pace.js            Tempointervaller og tempofilter
+data/pace.js            Tempointervaller og tempomatch
+data/filters.js         Filtrene på Find runs
+data/location.js        Lokation, afstand og kortudsnit
 screens/                Appens skærme
-components/             Genbrugelige komponenter (liste, valgfelt, dato/tid)
+components/             Genbrugelige komponenter (liste, kort, filterark, kortvælger, valgfelt, dato/tid)
 tests/                  Tests af Firestore-reglerne (se tests/README.md)
 ```
 
 ## Firebase
 
-Følg [Firebase-guiden](FIREBASE_SETUP.md) for at oprette databasen og forbinde appen, før du opretter løbeture.
+Følg [Firebase-guiden](FIREBASE_SETUP.md) for at oprette databasen og forbinde appen, før du opretter løbeture. Efter opdateringen med kort og filtre skal de nye `firestore.rules` publiceres i Firebase-konsollen.
 
 ## Start projektet
 

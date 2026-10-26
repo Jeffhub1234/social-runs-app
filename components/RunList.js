@@ -3,23 +3,27 @@ import { View, Text, FlatList, Pressable, ActivityIndicator } from "react-native
 
 import styles from "../styles";
 
+// Fælles liste over løbeture, som bruges på "Find runs", "Mine runs" og "Tilmeldte".
+// Viser også indlæsning og fejlbesked, så skærmene ikke skal gentage den logik.
 export default function RunList({ navigation, runs = [], loading, error, onRetry, header, emptyMessage }) {
   return (
     <FlatList
-      style={{ flex: 1 }}
+      style={styles.flex}
       data={runs}
       keyExtractor={(item) => item.id}
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 24 }}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      contentContainerStyle={styles.listContent}
       ListHeaderComponent={
         <View>
           {header}
-          {loading && <ActivityIndicator style={{ marginBottom: 16 }} accessibilityLabel="Henter løbeture" />}
+          {loading && <ActivityIndicator style={styles.loader} accessibilityLabel="Henter løbeture" />}
           {!!error && (
             <View style={styles.card}>
               <Text accessibilityRole="alert" style={styles.cardText}>{error}</Text>
               {onRetry && (
-                <Pressable accessibilityRole="button" onPress={onRetry} style={{ paddingVertical: 8 }}>
+                <Pressable accessibilityRole="button" onPress={onRetry} style={styles.retryButton}>
                   <Text style={styles.importantText}>Prøv igen</Text>
                 </Pressable>
               )}
@@ -28,6 +32,7 @@ export default function RunList({ navigation, runs = [], loading, error, onRetry
         </View>
       }
       ListEmptyComponent={!loading && !error ? <Text style={styles.cardText}>{emptyMessage}</Text> : null}
+      // Hvert kort er en knap, der åbner detaljeskærmen (stack-navigation) med turens id.
       renderItem={({ item }) => (
         <Pressable
           accessibilityRole="button"

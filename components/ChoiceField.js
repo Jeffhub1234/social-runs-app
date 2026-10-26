@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import styles from "../styles";
 
+// Genbrugeligt valgfelt: et tryk åbner et ark nedefra med faste valgmuligheder.
+// Bruges til tempo både på "Opret" og i filteret på "Find runs".
 export default function ChoiceField({ label, value, options, onChange }) {
   const [open, setOpen] = useState(false);
   return (

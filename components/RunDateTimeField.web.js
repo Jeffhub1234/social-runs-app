@@ -1,9 +1,12 @@
 import React from "react";
 import { Text, View } from "react-native";
-import styles from "../styles";
+import styles, { webInputStyle as inputStyle } from "../styles";
 
+// Webversionen af dato/tid-vælgeren. Expo bruger automatisk denne fil i browseren (.web.js),
+// fordi den native DateTimePicker ikke virker på web. Her bruges browserens egne <input>-felter.
+
+// Formaterer en dato som "ÅÅÅÅ-MM-DD", som <input type="date"> forventer.
 const localDate = (value) => `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
-const inputStyle = { padding: 12, fontSize: 16, border: "1px solid #d5d5d5", borderRadius: 10, background: "white", width: "100%", boxSizing: "border-box" };
 
 export default function RunDateTimeField({ value, onChange }) {
   return <View>

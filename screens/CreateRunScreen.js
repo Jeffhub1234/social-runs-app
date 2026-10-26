@@ -13,19 +13,17 @@ import styles from "../styles";
 import { useHeaderHeight } from "@react-navigation/elements";
 import ChoiceField from "../components/ChoiceField";
 import RunDateTimeField from "../components/RunDateTimeField";
+import { paceOptions } from "../data/pace";
 
+// Standardtidspunkt for en ny tur: om en time, afrundet til hele minutter.
 function defaultRunDate() {
   const next = new Date(Date.now() + 60 * 60 * 1000);
   next.setSeconds(0, 0);
   return next;
 }
 
-const paceOptions = Array.from({ length: 12 }, (_, index) => {
-  const seconds = 240 + index * 30;
-  const format = (value) => `${Math.floor(value / 60)}:${String(value % 60).padStart(2, "0")}`;
-  return `${format(seconds)}–${format(seconds + 30)} min/km`;
-});
-
+// "Opret": formular til at oprette en ny social løbetur, som gemmes i Firestore.
+// Tempo vælges fra faste intervaller, så det altid er tydeligt, og så tempofilteret på "Find runs" virker.
 export default function CreateRunScreen({ navigation, addRun }) {
   const headerHeight = useHeaderHeight();
   const [title, setTitle] = useState("");
@@ -39,6 +37,7 @@ export default function CreateRunScreen({ navigation, addRun }) {
 
   const createRun = async () => {
     if (saving) return;
+    // Navn, tempo, distance og lokation skal udfyldes. Resten er valgfrit.
     if (![title, pace, distance, location].every((value) => value.trim())) {
       Alert.alert(
         "Mangler oplysninger",
@@ -52,6 +51,7 @@ export default function CreateRunScreen({ navigation, addRun }) {
       return;
     }
 
+    // Arrangørens navn og id sættes af saveRun ud fra den indloggede bruger.
     const newRun = {
       title: title.trim(),
       pace: pace.trim(),
@@ -75,6 +75,7 @@ export default function CreateRunScreen({ navigation, addRun }) {
       setSaving(false);
     }
 
+    // Nulstil formularen, så den er klar til en ny tur.
     setTitle("");
     setPace("");
     setDistance("");
@@ -97,7 +98,7 @@ export default function CreateRunScreen({ navigation, addRun }) {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={styles.flex}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={headerHeight + 48}
     >
@@ -164,7 +165,7 @@ export default function CreateRunScreen({ navigation, addRun }) {
           maxLength={5000}
         />
 
-        <Pressable style={[styles.button, saving && { opacity: 0.6 }]} onPress={createRun} disabled={saving}>
+        <Pressable style={[styles.button, saving && styles.disabled]} onPress={createRun} disabled={saving}>
           <Text style={styles.buttonText}>{saving ? "Gemmer…" : "Opret løbetur"}</Text>
         </Pressable>
       </ScrollView>

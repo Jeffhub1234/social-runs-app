@@ -12,11 +12,14 @@ import RunDetailsScreen from "./screens/RunDetailsScreen";
 import CreateRunScreen from "./screens/CreateRunScreen";
 import { auth } from "./firebase";
 import { saveRun, setRunParticipation, subscribeToJoinedRuns, subscribeToRuns } from "./data/runRepository";
-import styles from "./styles";
+import styles, { colors } from "./styles";
 
+// Navigationen består af en stack (oversigt -> detaljer) med fire faner øverst i oversigten.
 const Stack = createNativeStackNavigator();
 const Tabs = createMaterialTopTabNavigator();
 
+// De fire faner: Find runs, Mine runs, Tilmeldte og Opret.
+// Alle faner får de samme løbeture fra Firestore og filtrerer dem efter, hvad de skal vise.
 function RunTabs({ user, runs, joinedRunIds, loading, error, participationLoading, participationError, onRetry }) {
   const { width } = useWindowDimensions();
   const shared = { loading, error, onRetry };
@@ -27,23 +30,26 @@ function RunTabs({ user, runs, joinedRunIds, loading, error, participationLoadin
       backBehavior="history"
       screenOptions={{
         lazy: true,
-        tabBarActiveTintColor: "#111",
-        tabBarInactiveTintColor: "#777",
-        tabBarLabelStyle: { fontSize: 13, fontWeight: "700", textTransform: "none" },
-        tabBarItemStyle: { paddingHorizontal: 4, minHeight: 48 },
-        tabBarIndicatorStyle: { backgroundColor: "#111", height: 3 },
-        tabBarStyle: { backgroundColor: "white", elevation: 0, shadowOpacity: 0, borderBottomWidth: 1, borderBottomColor: "#e5e5e5" },
+        tabBarActiveTintColor: colors.text,
+        tabBarInactiveTintColor: colors.inactive,
+        tabBarLabelStyle: styles.tabBarLabel,
+        tabBarItemStyle: styles.tabBarItem,
+        tabBarIndicatorStyle: styles.tabBarIndicator,
+        tabBarStyle: styles.tabBar,
       }}
     >
       <Tabs.Screen name="FindRuns" options={{ title: "Find runs", tabBarAccessibilityLabel: "Find løbeture" }}>
         {(props) => <HomeScreen {...props} {...shared} runs={runs} />}
       </Tabs.Screen>
+      {/* Kun ture, som brugeren selv har oprettet. */}
       <Tabs.Screen name="MyRuns" options={{ title: "Mine runs" }}>
         {(props) => <MyRunsScreen {...props} {...shared} runs={runs.filter((run) => run.organizerId === user.uid)} />}
       </Tabs.Screen>
+      {/* Kun ture, som brugeren har meldt sig til. */}
       <Tabs.Screen name="JoinedRuns" options={{ title: "Tilmeldte", tabBarAccessibilityLabel: "Tilmeldte runs" }}>
         {(props) => <JoinedRunsScreen {...props} runs={runs.filter((run) => joinedRunIds.includes(run.id))} loading={loading || participationLoading} error={error || participationError} onRetry={onRetry} />}
       </Tabs.Screen>
+      {/* Swipe er slået fra her, så man ikke skifter fane ved et uheld midt i formularen. */}
       <Tabs.Screen name="CreateRun" options={{ title: "Opret", tabBarAccessibilityLabel: "Opret løbetur", swipeEnabled: false }}>
         {(props) => <CreateRunScreen {...props} addRun={saveRun} />}
       </Tabs.Screen>
@@ -51,6 +57,8 @@ function RunTabs({ user, runs, joinedRunIds, loading, error, participationLoadin
   );
 }
 
+// Den del af appen, man ser, når man er logget ind.
+// Her lytter vi live til Firestore, så nye løbeture og tilmeldinger vises med det samme.
 function UserApp({ user }) {
   const [runs, setRuns] = useState([]);
   const [joinedRunIds, setJoinedRunIds] = useState([]);
@@ -60,6 +68,8 @@ function UserApp({ user }) {
   const [participationError, setParticipationError] = useState("");
   const [retry, setRetry] = useState(0);
 
+  // Start abonnementer på løbeture og brugerens tilmeldinger. Når "retry" ændres
+  // (knappen "Prøv igen"), startes de forfra. Abonnementerne stoppes, når brugeren logger ud.
   useEffect(() => {
     setLoading(true);
     setParticipationLoading(true);
@@ -96,14 +106,15 @@ function UserApp({ user }) {
       >
         <Stack.Screen name="RunTabs" options={{
           title: "Social Runs",
-          headerTitle: () => <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 17, fontWeight: "700", color: "#111" }}>Social Runs</Text>
-            <Text numberOfLines={1} style={{ fontSize: 12, color: "#555", maxWidth: 180 }}>Hej {user.displayName || "løber"}</Text>
+          headerTitle: () => <View style={styles.headerTitleBox}>
+            <Text style={styles.headerTitle}>Social Runs</Text>
+            <Text numberOfLines={1} style={styles.headerSubtitle}>Hej {user.displayName || "løber"}</Text>
           </View>,
-          headerRight: () => <Pressable accessibilityRole="button" onPress={logout} hitSlop={8} style={{ paddingVertical: 8 }}><Text style={{ fontSize: 14, color: "#555" }}>Log ud</Text></Pressable>,
+          headerRight: () => <Pressable accessibilityRole="button" onPress={logout} hitSlop={8} style={styles.headerButton}><Text style={styles.headerButtonText}>Log ud</Text></Pressable>,
         }}>
           {() => <RunTabs user={user} runs={runs} joinedRunIds={joinedRunIds} {...shared} participationLoading={participationLoading} participationError={participationError} />}
         </Stack.Screen>
+        {/* Detaljeskærmen lægges oven på fanerne, så tilbage-knappen fører tilbage til listen. */}
         <Stack.Screen name="RunDetails" options={{ title: "Detaljer" }}>
           {(props) => <RunDetailsScreen {...props} {...shared} runs={runs} user={user} joinedRunIds={joinedRunIds} participationLoading={participationLoading} participationError={participationError} onSetParticipation={setRunParticipation} />}
         </Stack.Screen>
@@ -112,11 +123,13 @@ function UserApp({ user }) {
   );
 }
 
+// Appens startpunkt: viser login, indtil Firebase Auth melder en indlogget bruger.
 export default function App() {
   const [user, setUser] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(Boolean(auth));
   const [registering, setRegistering] = useState(false);
 
+  // Firebase husker login (via AsyncStorage på telefonen), så brugeren forbliver logget ind.
   useEffect(() => {
     if (!auth) return;
     return onAuthStateChanged(auth, (currentUser) => {
@@ -125,6 +138,8 @@ export default function App() {
     });
   }, []);
 
+  // Opretter brugeren og gemmer navnet, så andre kan se, hvem der arrangerer en tur.
+  // "registering" holder login-skærmen fremme, indtil navnet er gemt.
   const register = async (name, email, password) => {
     setRegistering(true);
     let created = false;
@@ -137,7 +152,7 @@ export default function App() {
       if (created) {
         setUser(null);
         try { await signOut(auth); }
-        catch { /* Keep the login screen visible if logout also fails. */ }
+        catch { /* Bliv på login-skærmen, selv hvis udlogningen også fejler. */ }
         const profileError = new Error("Kontoen blev oprettet, men navnet kunne ikke gemmes. Log ind med din e-mail og adgangskode.");
         profileError.code = "auth/profile-update-failed";
         throw profileError;
@@ -148,7 +163,7 @@ export default function App() {
     }
   };
 
-  if (checkingAuth) return <View style={[styles.screen, { justifyContent: "center", alignItems: "center" }]}><ActivityIndicator /><Text style={styles.cardText}>Henter din bruger…</Text></View>;
+  if (checkingAuth) return <View style={[styles.screen, styles.centered]}><ActivityIndicator /><Text style={styles.cardText}>Henter din bruger…</Text></View>;
 
   return <NavigationContainer>
     {user && !registering ? <UserApp key={user.uid} user={user} /> : <AuthScreen onRegister={register} />}

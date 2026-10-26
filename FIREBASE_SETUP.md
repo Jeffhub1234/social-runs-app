@@ -1,6 +1,6 @@
 # Firebase til Social Runs
 
-Appen gemmer nye løbeture i Cloud Firestore og viser ændringer løbende. De gamle eksempeldata i `data/runs.js` indlæses ikke længere. Du starter med en tom oversigt.
+Appen gemmer nye løbeture i Cloud Firestore og viser ændringer løbende. Der er ingen indbyggede eksempeldata, så du starter med en tom oversigt.
 
 ## Har du allerede Firebase opsat?
 

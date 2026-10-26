@@ -3,8 +3,11 @@ import { Platform, Pressable, Text, View } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import styles from "../styles";
 
+// Felt til dato og tidspunkt med telefonens egen vælger (iOS/Android).
+// "mode" styrer, om dato- eller tidsvælgeren er åben (null = lukket).
 export default function RunDateTimeField({ value, onChange }) {
   const [mode, setMode] = useState(null);
+  // Android lukker selv vælgeren efter et valg. Kun den valgte del (dato eller tid) ændres.
   const change = (event, selected) => {
     if (Platform.OS === "android") setMode(null);
     if (event.type !== "set" || !selected) return;

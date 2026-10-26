@@ -4,6 +4,7 @@ import { View, Text } from "react-native";
 import styles from "../styles";
 import RunList from "../components/RunList";
 
+// "Mine runs": de løbeture, brugeren selv har oprettet (listen filtreres i App.js).
 export default function MyRunsScreen({ navigation, runs, loading, error, onRetry }) {
   return (
     <View style={styles.screen}>

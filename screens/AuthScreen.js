@@ -13,6 +13,7 @@ import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/aut
 import { auth, firebaseConfigured } from "../firebase";
 import styles from "../styles";
 
+// Oversætter Firebase-fejlkoder til forståelige danske beskeder.
 function authErrorMessage(error) {
   switch (error?.code) {
     case "auth/invalid-credential":
@@ -45,6 +46,7 @@ function authErrorMessage(error) {
   }
 }
 
+// Login-skærmen har tre tilstande: "login", "register" (opret bruger) og "reset" (glemt adgangskode).
 export default function AuthScreen({ onRegister }) {
   const [mode, setMode] = useState("login");
   const [name, setName] = useState("");
@@ -54,6 +56,7 @@ export default function AuthScreen({ onRegister }) {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  // useRef i stedet for state, så et dobbelttryk ikke sender to forespørgsler, før skærmen er opdateret.
   const busy = useRef(false);
   const configured = firebaseConfigured && Boolean(auth);
   const isRegister = mode === "register";
@@ -76,6 +79,7 @@ export default function AuthScreen({ onRegister }) {
     const normalizedEmail = email.trim().toLowerCase();
     const displayName = name.trim();
 
+    // Tjek felterne i appen først, så brugeren får en hurtig og præcis besked.
     if (isRegister && !displayName) {
       setError("Skriv dit navn, så andre kan se, hvem der arrangerer løbeturen.");
       return;
@@ -109,8 +113,8 @@ export default function AuthScreen({ onRegister }) {
         await signInWithEmailAndPassword(auth, normalizedEmail, password);
       }
     } catch (submitError) {
-      // Older Firebase projects may reveal missing users during password reset.
-      // Keep the same confirmation for every e-mail address.
+      // Ældre Firebase-projekter afslører, om en e-mail findes, når man nulstiller adgangskoden.
+      // Vi viser samme besked for alle e-mails, så man ikke kan se, hvem der har en bruger.
       if (isReset && submitError?.code === "auth/user-not-found") {
         setMessage("Hvis der findes en bruger med denne e-mail, modtager du et link til en ny adgangskode. Tjek også spam-mappen.");
       } else {
@@ -124,16 +128,16 @@ export default function AuthScreen({ onRegister }) {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#f7f7f7" }}
+      style={styles.keyboardScreen}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { flexGrow: 1, justifyContent: "center" }]}
+        contentContainerStyle={[styles.scrollContent, styles.centeredContent]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ width: "100%", maxWidth: 480, alignSelf: "center" }}>
-          <Text style={[styles.subheading, { fontWeight: "700" }]}>Social Runs</Text>
+        <View style={styles.authContainer}>
+          <Text style={[styles.subheading, styles.brandText]}>Social Runs</Text>
           <Text style={styles.heading}>
             {isReset ? "Glemt adgangskode?" : isRegister ? "Opret en bruger" : "Velkommen tilbage"}
           </Text>
@@ -146,7 +150,7 @@ export default function AuthScreen({ onRegister }) {
           </Text>
 
           {!configured && (
-            <Text style={[styles.cardText, { color: "#9b1c1c", marginBottom: 12 }]} accessibilityRole="alert">
+            <Text style={[styles.cardText, styles.errorText, styles.setupWarning]} accessibilityRole="alert">
               Firebase mangler opsætning. Følg FIREBASE_SETUP.md og udfyld .env, og genstart derefter appen.
             </Text>
           )}
@@ -231,7 +235,7 @@ export default function AuthScreen({ onRegister }) {
 
           {Boolean(error) && (
             <Text
-              style={[styles.cardText, { color: "#9b1c1c", marginTop: 14 }]}
+              style={[styles.cardText, styles.errorText, styles.feedbackText]}
               accessibilityRole="alert"
               accessibilityLiveRegion="assertive"
             >
@@ -240,7 +244,7 @@ export default function AuthScreen({ onRegister }) {
           )}
           {Boolean(message) && (
             <Text
-              style={[styles.cardText, { color: "#236b36", marginTop: 14 }]}
+              style={[styles.cardText, styles.successText, styles.feedbackText]}
               accessibilityLiveRegion="polite"
             >
               {message}
@@ -248,7 +252,7 @@ export default function AuthScreen({ onRegister }) {
           )}
 
           <Pressable
-            style={[styles.button, disabled && { opacity: 0.5 }]}
+            style={[styles.button, disabled && styles.disabled]}
             onPress={submit}
             disabled={disabled}
             accessibilityRole="button"
@@ -263,16 +267,16 @@ export default function AuthScreen({ onRegister }) {
             <Pressable
               onPress={() => changeMode("reset")}
               disabled={loading}
-              style={{ padding: 12, alignItems: "center", marginBottom: 12 }}
+              style={styles.linkButton}
               accessibilityRole="button"
               accessibilityState={{ disabled: loading }}
             >
-              <Text style={[styles.cardText, { textDecorationLine: "underline" }]}>Glemt adgangskode?</Text>
+              <Text style={[styles.cardText, styles.underline]}>Glemt adgangskode?</Text>
             </Pressable>
           )}
 
           <Pressable
-            style={[styles.secondaryButton, loading && { opacity: 0.5 }]}
+            style={[styles.secondaryButton, loading && styles.disabled]}
             onPress={() => changeMode(mode === "login" ? "register" : "login")}
             disabled={loading}
             accessibilityRole="button"

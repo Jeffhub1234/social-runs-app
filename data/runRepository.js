@@ -1,12 +1,18 @@
 import { addDoc, collection, doc, increment, onSnapshot, orderBy, query, runTransaction, serverTimestamp } from "firebase/firestore";
 import { requireUser, db } from "../firebase";
 
+// Al kommunikation med Firestore-databasen ligger her, så skærmene ikke taler direkte med Firebase.
+
+// Lytter live på alle løbeture (nyeste først). onSnapshot kalder onRuns igen, hver gang data ændres.
+// Returnerer en funktion, der stopper lytningen.
 export function subscribeToRuns(onRuns, onError) {
   return onSnapshot(query(collection(db, "runs"), orderBy("createdAt", "desc")),
     (snapshot) => onRuns(snapshot.docs.map((document) => ({ ...document.data(), id: document.id }))),
     onError);
 }
 
+// Gemmer en ny løbetur. Arrangør og tidspunkt sættes her, så de ikke kan forfalskes fra formularen
+// (Firestore-reglerne tjekker også, at organizerId er den indloggede bruger).
 export async function saveRun(run) {
   const user = requireUser();
   const { id, ...data } = run;
@@ -18,13 +24,15 @@ export async function saveRun(run) {
   });
 }
 
+// Lytter på brugerens tilmeldinger. Hver tilmelding er et dokument i users/{uid}/joinedRuns med turens id.
 export function subscribeToJoinedRuns(userId, onIds, onError) {
   return onSnapshot(collection(db, "users", userId, "joinedRuns"),
     (snapshot) => onIds(snapshot.docs.map((document) => document.id)), onError);
 }
 
-// One membership document per user/run makes repeat taps idempotent.
-// The membership and public count must change in the same transaction.
+// Melder brugeren til (joined = true) eller fra (joined = false) en løbetur.
+// Ét tilmeldingsdokument pr. bruger og tur gør, at gentagne tryk ikke tæller dobbelt.
+// Tilmeldingen og det offentlige deltagerantal ændres i samme transaktion, så de altid passer sammen.
 export async function setRunParticipation(runId, joined) {
   const user = requireUser();
   const runRef = doc(db, "runs", runId);

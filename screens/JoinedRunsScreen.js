@@ -4,6 +4,7 @@ import { View, Text } from "react-native";
 import styles from "../styles";
 import RunList from "../components/RunList";
 
+// "Tilmeldte": de løbeture, brugeren har meldt sig til (listen filtreres i App.js).
 export default function JoinedRunsScreen({ navigation, runs, loading, error, onRetry }) {
   return (
     <View style={styles.screen}>

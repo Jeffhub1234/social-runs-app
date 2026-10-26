@@ -2,7 +2,11 @@
 
 Social Runs er en React Native-app (Expo) til sociale løbeture. Man kan finde løbeture, der passer til ens eget tempo, oprette sine egne ture og melde sig til andres. Hver tur viser tydeligt tempo, distance, mødested og en social aktivitet bagefter (fx kaffe), så det er nemt at vurdere, om turen passer til én.
 
-**Demovideo:** [youtube.com/shorts/ssJa7kzU8b0](https://youtube.com/shorts/ssJa7kzU8b0?feature=share)
+Demovideo: https://www.youtube.com/shorts/rn9GarYY7TM
+
+GitHub: https://github.com/Jeffhub1234/social-runs-app
+
+Individuel aflevering af Jonathan Holm til godkendelsesopgave 2 i Innovation og ny teknologi (E26).
 
 ## Funktioner
 

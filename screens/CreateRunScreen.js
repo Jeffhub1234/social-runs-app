@@ -26,7 +26,6 @@ import { isValidPoint } from "../data/location";
 // Id, der kobler distancefeltet til "Færdig"-bjælken over iPhonens taltastatur.
 const DISTANCE_KEYBOARD_ID = "distanceKeyboard";
 
-
 // Standardtidspunkt for en ny tur: om en time, afrundet til hele minutter.
 function defaultRunDate() {
   const next = new Date(Date.now() + 60 * 60 * 1000);
@@ -124,7 +123,6 @@ export default function CreateRunScreen({ navigation, addRun }) {
       end: route.end,
       participants: 1,
       afterRun,
-      organizer: "Dig",
       description:
         description || "En social løbetur oprettet af en bruger.",
     };
@@ -132,7 +130,7 @@ export default function CreateRunScreen({ navigation, addRun }) {
     setSaving(true);
     try {
       await addRun(newRun);
-    } catch (error) {
+    } catch {
       Alert.alert("Kunne ikke gemme løbeturen", "Kontrollér Firebase-opsætningen og din internetforbindelse, og prøv igen.");
       return;
     } finally {

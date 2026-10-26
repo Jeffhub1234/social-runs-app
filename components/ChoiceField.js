@@ -14,7 +14,7 @@ export default function ChoiceField({ label, value, options, onChange }) {
       <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
         <View style={styles.modalBackdrop}>
           <View style={styles.selectionSheet}>
-            <Text style={styles.cardTitle}>{label}</Text>
+            <Text style={styles.sheetTitle}>{label}</Text>
             <ScrollView>
               {options.map((option) => (
                 <Pressable key={option} style={styles.choiceOption} accessibilityRole="radio" accessibilityState={{ checked: value === option }} onPress={() => { onChange(option); setOpen(false); }}>

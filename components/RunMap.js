@@ -3,9 +3,10 @@ import { Pressable, Text, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 
 import styles, { colors } from "../styles";
+import { MetaLine } from "./RunList";
 import { distanceKm, formatKm, isValidPoint, regionAround } from "../data/location";
 
-// Kortet på "Find runs": en grøn nål for hver løbeturs startsted.
+// Kortet på "Find runs": en blå nål for hver løbeturs startsted.
 // Tryk på en nål for at se turen nederst, og tryk på kortet med turen for at åbne detaljerne.
 export default function RunMap({ runs, userLocation, onOpenRun }) {
   const mapRef = useRef(null);
@@ -44,12 +45,13 @@ export default function RunMap({ runs, userLocation, onOpenRun }) {
         <View style={styles.mapCard}>
           <Pressable accessibilityRole="button" onPress={() => onOpenRun(selected.id)}>
             <Text style={styles.cardTitle}>{selected.title}</Text>
-            <Text style={styles.importantText}>Tempo: {selected.pace}</Text>
-            <Text style={styles.cardText}>{selected.distance} · {selected.date}</Text>
-            <Text style={styles.cardText}>
-              📍 {selected.location}
+            <MetaLine label="tempo">{selected.pace}</MetaLine>
+            <MetaLine label="distance">{selected.distance}</MetaLine>
+            <MetaLine label="tid">{selected.date}</MetaLine>
+            <MetaLine label="mødested">
+              {selected.location}
               {userLocation ? ` · ${formatKm(distanceKm(userLocation, selected.start))} fra dig` : ""}
-            </Text>
+            </MetaLine>
             <Text style={[styles.linkText, styles.mapCardLink]}>Se detaljer og tilmeld dig ›</Text>
           </Pressable>
           <Pressable style={styles.mapCardClose} onPress={() => setSelectedId(null)} hitSlop={10} accessibilityRole="button" accessibilityLabel="Luk">

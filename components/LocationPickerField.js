@@ -60,7 +60,7 @@ export default function LocationPickerField({ start, end, onChange }) {
   };
 
   const segments = [
-    { key: "start", label: `🟢 Start${isValidPoint(draftStart) ? " ✓" : ""}` },
+    { key: "start", label: `🔵 Start${isValidPoint(draftStart) ? " ✓" : ""}` },
     { key: "end", label: `🔴 Slut${isValidPoint(draftEnd) ? " ✓" : ""}` },
   ];
 
@@ -74,7 +74,7 @@ export default function LocationPickerField({ start, end, onChange }) {
       <Modal visible={open} animationType="slide" onRequestClose={() => setOpen(false)}>
         <SafeAreaView style={styles.pickerScreen}>
           <View style={styles.pickerContent}>
-            <Text style={styles.cardTitle}>Vælg start og slut</Text>
+            <Text style={styles.sheetTitle}>Vælg start og slut</Text>
             <Text style={styles.noteText}>Vælg nål herunder, og tryk på kortet for at placere den. Hold på en nål for at flytte den.</Text>
 
             <View style={[styles.segmented, styles.pickerSegmented]}>

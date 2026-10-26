@@ -14,6 +14,10 @@ Social Runs er en React Native-app (Expo) til sociale løbeture. Man kan finde l
 - **Deltag / forlad løbetur** på detaljeskærmen, hvor ruten også vises på et lille kort. Deltagerantallet opdateres live for alle brugere.
 - **Mine runs** og **Tilmeldte** viser henholdsvis de ture, man har oprettet, og dem, man er meldt til.
 
+## Design
+
+Appen er stylet i en Bauhaus-inspireret stil. Al tekst står med små bogstaver, som i Herbert Bayers typografi. Hver skærm har en "plakat" i en af grundfarverne (rød, gul, blå eller sort), og cirklen går igen som form. Lister er opbygget som en tabel med tynde sorte linjer. Skriften er Futura på iPhone. Al styling ligger i `styles.js`.
+
 ## Skærme og navigation
 
 | Skærm | Fil | Indhold |

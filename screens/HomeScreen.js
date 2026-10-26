@@ -5,6 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import styles from "../styles";
 import RunList from "../components/RunList";
 import RunMap from "../components/RunMap";
+import ScreenHeading from "../components/ScreenHeading";
 import FilterSheet from "../components/FilterSheet";
 import { DEFAULT_FILTERS, countActiveFilters, matchesFilters, upcomingRuns } from "../data/filters";
 import { useUserLocation } from "../data/location";
@@ -51,8 +52,7 @@ export default function HomeScreen({ navigation, runs, loading, error, onRetry }
 
   return (
     <View style={styles.screen}>
-      <Text style={styles.heading}>Løbeture nær dig</Text>
-      <Text style={styles.subheading}>Find en social løbetur, der passer til dit tempo.</Text>
+      <ScreenHeading title="Løbeture nær dig" subtitle="Find en social løbetur, der passer til dit tempo." />
 
       <View style={styles.toolbar}>
         <View style={styles.segmented}>
@@ -74,7 +74,7 @@ export default function HomeScreen({ navigation, runs, loading, error, onRetry }
           accessibilityRole="button"
           accessibilityLabel={`Filtre, ${activeCount} aktive`}
         >
-          <Text style={[styles.segmentText, activeCount > 0 && styles.segmentTextSelected]}>
+          <Text style={[styles.segmentText, activeCount > 0 && styles.filterButtonTextActive]}>
             Filtre{activeCount > 0 ? ` (${activeCount})` : ""}
           </Text>
         </Pressable>

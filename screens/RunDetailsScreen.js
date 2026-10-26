@@ -3,6 +3,20 @@ import { View, Text, Pressable, ScrollView, ActivityIndicator } from "react-nati
 
 import styles from "../styles";
 import RoutePreview from "../components/RoutePreview";
+import ScreenHeading from "../components/ScreenHeading";
+import { hasSocialActivity } from "../data/filters";
+import { isValidPoint } from "../data/location";
+
+// Én række i oplysningstabellen: en grå etiket til venstre og værdien til højre.
+// Faste etiketter i stedet for emojis gør det tydeligt, hvad hver oplysning betyder.
+function InfoRow({ label, value }) {
+  return (
+    <View style={styles.infoRow}>
+      <Text style={styles.infoLabel}>{label}</Text>
+      <Text style={styles.infoValue}>{value}</Text>
+    </View>
+  );
+}
 
 // "Detaljer": viser én løbetur og lader brugeren melde sig til eller fra.
 // Turen findes i listen fra Firestore ud fra det id, der blev sendt med i navigationen.
@@ -78,17 +92,28 @@ export default function RunDetailsScreen({
           {retryButton}
         </View>
       )}
-      <View style={styles.detailBox}>
-        <Text style={styles.detailTitle}>{run.title}</Text>
-        <Text style={styles.detailText}>🏃 Tempo: {run.pace}</Text>
-        <Text style={styles.detailText}>📏 Distance: {run.distance}</Text>
-        <Text style={styles.detailText}>🕒 {run.date}</Text>
-        <Text style={styles.detailText}>📍 {run.location}</Text>
-        <Text style={styles.detailText}>👥 {run.participants ?? 1} deltagere</Text>
-        <Text style={styles.detailText}>🙋 Arrangør: {run.organizer}</Text>
-        {!!run.afterRun && <Text style={styles.detailText}>☕ {run.afterRun}</Text>}
+      <View>
+        {/* Turens navn vises med de store bogstaver, arrangøren har skrevet. */}
+        <ScreenHeading title={run.title} color="blue" keepCase />
+        <View style={styles.infoTable}>
+          <InfoRow label="Tempo" value={run.pace} />
+          <InfoRow label="Distance" value={run.distance} />
+          <InfoRow label="Tidspunkt" value={run.date} />
+          <InfoRow label="Mødested" value={run.location} />
+          <InfoRow label="Deltagere" value={String(run.participants ?? 1)} />
+          <InfoRow label="Arrangør" value={run.organizer} />
+          <InfoRow label="Efter løbet" value={hasSocialActivity(run) ? run.afterRun : "Ingen social aktivitet"} />
+        </View>
+
         {/* Kortet vises kun for ture med start og slut. Ældre ture har ingen koordinater. */}
-        <RoutePreview start={run.start} end={run.end} />
+        {(isValidPoint(run.start) || isValidPoint(run.end)) && (
+          <>
+            <Text style={styles.sectionLabel}>Rute</Text>
+            <RoutePreview start={run.start} end={run.end} />
+          </>
+        )}
+
+        <Text style={styles.sectionLabel}>Om turen</Text>
         <Text style={styles.description}>{run.description}</Text>
 
         {isOrganizer ? (

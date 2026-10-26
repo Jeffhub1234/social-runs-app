@@ -12,7 +12,7 @@ import RunDetailsScreen from "./screens/RunDetailsScreen";
 import CreateRunScreen from "./screens/CreateRunScreen";
 import { auth } from "./firebase";
 import { saveRun, setRunParticipation, subscribeToJoinedRuns, subscribeToRuns } from "./data/runRepository";
-import styles, { colors } from "./styles";
+import styles, { colors, navTheme } from "./styles";
 
 // Navigationen består af en stack (oversigt -> detaljer) med fire faner øverst i oversigten.
 const Stack = createNativeStackNavigator();
@@ -29,8 +29,13 @@ function RunTabs({ user, runs, joinedRunIds, loading, error, participationLoadin
       initialLayout={{ width }}
       backBehavior="history"
       screenOptions={{
-        lazy: true,
-        tabBarActiveTintColor: colors.text,
+        // Swipe mellem faner er slået fra på alle faner: på "Find runs" skal et træk flytte kortet,
+        // og på "Opret" skal man ikke skifte fane ved et uheld. Indstillingen skal være ens for
+        // alle faner, ellers skifter den midt i animationen, og indikatoren springer i stedet for at glide.
+        swipeEnabled: false,
+        // Alle faner tegnes med det samme, så første skift til en fane også glider jævnt.
+        lazy: false,
+        tabBarActiveTintColor: colors.ink,
         tabBarInactiveTintColor: colors.inactive,
         tabBarLabelStyle: styles.tabBarLabel,
         tabBarItemStyle: styles.tabBarItem,
@@ -38,8 +43,7 @@ function RunTabs({ user, runs, joinedRunIds, loading, error, participationLoadin
         tabBarStyle: styles.tabBar,
       }}
     >
-      {/* Swipe er slået fra, så et vandret træk på kortet flytter kortet i stedet for at skifte fane. */}
-      <Tabs.Screen name="FindRuns" options={{ title: "Find runs", tabBarAccessibilityLabel: "Find løbeture", swipeEnabled: false }}>
+      <Tabs.Screen name="FindRuns" options={{ title: "Find runs", tabBarAccessibilityLabel: "Find løbeture" }}>
         {(props) => <HomeScreen {...props} {...shared} runs={runs} />}
       </Tabs.Screen>
       {/* Kun ture, som brugeren selv har oprettet. */}
@@ -50,8 +54,7 @@ function RunTabs({ user, runs, joinedRunIds, loading, error, participationLoadin
       <Tabs.Screen name="JoinedRuns" options={{ title: "Tilmeldte", tabBarAccessibilityLabel: "Tilmeldte runs" }}>
         {(props) => <JoinedRunsScreen {...props} runs={runs.filter((run) => joinedRunIds.includes(run.id))} loading={loading || participationLoading} error={error || participationError} onRetry={onRetry} />}
       </Tabs.Screen>
-      {/* Swipe er slået fra her, så man ikke skifter fane ved et uheld midt i formularen. */}
-      <Tabs.Screen name="CreateRun" options={{ title: "Opret", tabBarAccessibilityLabel: "Opret løbetur", swipeEnabled: false }}>
+      <Tabs.Screen name="CreateRun" options={{ title: "Opret", tabBarAccessibilityLabel: "Opret løbetur" }}>
         {(props) => <CreateRunScreen {...props} addRun={saveRun} />}
       </Tabs.Screen>
     </Tabs.Navigator>
@@ -103,6 +106,10 @@ function UserApp({ user }) {
         initialRouteName="RunTabs"
         screenOptions={{
           headerTitleAlign: "center",
+          headerStyle: styles.navHeader,
+          headerTitleStyle: styles.navHeaderTitle,
+          headerTintColor: colors.ink,
+          headerShadowVisible: false,
         }}
       >
         <Stack.Screen name="RunTabs" options={{
@@ -166,7 +173,7 @@ export default function App() {
 
   if (checkingAuth) return <View style={[styles.screen, styles.centered]}><ActivityIndicator /><Text style={styles.cardText}>Henter din bruger…</Text></View>;
 
-  return <NavigationContainer>
+  return <NavigationContainer theme={navTheme}>
     {user && !registering ? <UserApp key={user.uid} user={user} /> : <AuthScreen onRegister={register} />}
   </NavigationContainer>;
 }

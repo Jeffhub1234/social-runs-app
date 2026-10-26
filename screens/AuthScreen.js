@@ -12,6 +12,7 @@ import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/aut
 
 import { auth, firebaseConfigured } from "../firebase";
 import styles from "../styles";
+import ScreenHeading from "../components/ScreenHeading";
 
 // Oversætter Firebase-fejlkoder til forståelige danske beskeder.
 function authErrorMessage(error) {
@@ -137,7 +138,8 @@ export default function AuthScreen({ onRegister }) {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.authContainer}>
-          <Text style={[styles.subheading, styles.brandText]}>Social Runs</Text>
+          {/* Stor plakat med appens navn øverst, derefter overskriften for den valgte tilstand. */}
+          <ScreenHeading size="large" color="red" title="Social Runs" />
           <Text style={styles.heading}>
             {isReset ? "Glemt adgangskode?" : isRegister ? "Opret en bruger" : "Velkommen tilbage"}
           </Text>

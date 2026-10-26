@@ -2,23 +2,9 @@ import React from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 
 import styles from "../styles";
+import Chip from "./Chip";
 import { paceOptions } from "../data/pace";
 import { DEFAULT_FILTERS, dayOptions, distanceOptions, nearbyOptions, timeOfDayOptions } from "../data/filters";
-
-// Én valgmulighed i filteret. Den valgte vises med mørk baggrund.
-function Chip({ label, selected, disabled, onPress }) {
-  return (
-    <Pressable
-      style={[styles.chip, selected && styles.chipSelected, disabled && styles.disabled]}
-      onPress={onPress}
-      disabled={disabled}
-      accessibilityRole="radio"
-      accessibilityState={{ checked: selected, disabled }}
-    >
-      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
-    </Pressable>
-  );
-}
 
 // En overskrift med en række chips, hvor man vælger én.
 function ChipGroup({ title, note, options, value, onChange, disabled }) {
@@ -56,7 +42,7 @@ export default function FilterSheet({ visible, filters, onChange, onClose, resul
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.modalBackdrop}>
         <View style={[styles.selectionSheet, styles.filterSheet]}>
-          <Text style={styles.cardTitle}>Filtrér løbeture</Text>
+          <Text style={styles.sheetTitle}>Filtrér løbeture</Text>
           <ScrollView style={styles.sheetScroll} showsVerticalScrollIndicator={false}>
             <ChipGroup
               title="Dit tempo (min/km)"
